@@ -15,9 +15,9 @@ function parsePage() {
     .split(",")
     .map((word) => word.trim());
 
-  meta.lang = document.documentElement.getAttribute("lang");
+  meta.language = document.documentElement.getAttribute("lang");
 
-  let og = document.querySelectorAll('meta[property="og:"]');
+  let og = Array.from(document.querySelectorAll('meta[property^="og:"]'));
   meta.opengraph = {};
   og.forEach((tag) => {
     const property = tag.getAttribute("property");
@@ -25,6 +25,7 @@ function parsePage() {
     const key = property.replace("og:", "");
 
     meta.opengraph[key] = content;
+    meta.opengraph.title = document.title.split(' — ')[0];
   });
 
   // Продукт теперь
@@ -58,14 +59,14 @@ function parsePage() {
     product.tags[key].push(value);
   });
 
-  product.price = domProduct
+  product.price = Number(domProduct
     .querySelector(".price")
     .childNodes[0].textContent.trim()
-    .replace(/^\D+/, "");
-  product.oldPrice = domProduct
+    .replace(/^\D+/, ""));
+  product.oldPrice = Number(domProduct
     .querySelector(".price")
     .childNodes[1].textContent.trim()
-    .replace(/^\D+/, "");
+    .replace(/^\D+/, ""));
 
   if (product.price === product.oldPrice) {
     product.discount = "0";
@@ -74,8 +75,8 @@ function parsePage() {
   }
 
   if (product.discount !== "0") {
-    product.discountPercent = `${
-      100 - (product.price * 100) / product.oldPrice
+    product.discountPercent = `${(
+      100 - (product.price * 100) / product.oldPrice).toFixed(2)
     }%`;
   } else {
     product.discountPercent = "0%";
@@ -106,7 +107,8 @@ function parsePage() {
   product.description = domProduct
     .querySelector(".description")
     .innerHTML.trim()
-    .replace('class="unused"', "");
+    .replace(' class="unused"', "")
+    ;
 
   let allPic = Array.from(domProduct.querySelector("nav").children);
   product.images = [];
